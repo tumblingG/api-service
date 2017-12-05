@@ -1,0 +1,22 @@
+{
+  "name": "api-service",
+  "version": "1.0.0",
+  "description": "一个使用es6代理和ES7装饰器包装的ngResource服务模块",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tumblingG/api-service.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tumblingG/api-service/issues"
+  },
+  "homepage": "https://github.com/tumblingG/api-service#readme",
+  "dependencies": {
+    "angular-resource": "^1.6.7"
+  }
+}
