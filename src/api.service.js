@@ -26,11 +26,14 @@
      * @type {{create: {method: string}, get: {method: string}, getAll: {method: string, isArray: boolean}, update: {method: string}, delete: {method: string}}}
      * @return {object}
      */
-    export const baseActions = {
+    const baseActions = {
         create: {
             method: 'POST'
         },
         get: {
+            method: 'GET'
+        },
+        list: {
             method: 'GET'
         },
         getAll: {
@@ -52,7 +55,9 @@
             this.$resource = $resource;
             this.$log = $log;
             this.$window = $window;
-            this.localCache = localCache
+            this.localCache = localCache;
+
+            return factory();
         }
 
         factory() {
@@ -103,13 +108,27 @@
                             if (Object.is(action.method, 'GET')) {
                                 if (actionsToCache.includes(prop)) {
                                     return  this._cachedFn.bind(this, this._resource[prop])
+                                }else {
+                                    return this._resource[prop];
+                                }
+                            }else {
+                                return (...args) => {
+                                    return {
+                                        $promise: this._resource[prop].apply(null, args).$promise.then(res => {
+                                            this.localCache.clearFuzzyMatch(this.cacheKey);
+                                            return res;
+                                        }).catch(err => {throw err;})
+                                    };
                                 }
                             }
                         }else {
                             throw 'do not has this method';
                         }
                     }
-                }
+                };
+                return new Proxy({}, handler);
+            }else {
+                return this._resource;
             }
         }
 
@@ -230,7 +249,32 @@
                 return originFn.apply(null, args);
             }
 
-            // return $promise: this.localCache
+             return {
+                 $promise: this.localCache.getItem(localkey).then(res => {
+                    if (res) {
+                        this.$log.debug(`${this.getLocalStorageKey()}: load from local`);
+                        return this.$q.resolve(res).then(res => {
+                            return success(res) || res;
+                        }).catch(err => {
+                            throw fail(err) || err;
+                        });
+                    }else {
+                        return originFn.apply(null, [params]).$promise.then(res => {
+                            this.localCache.setItem(localKey, res);
+                            return success(res) || res;
+                        }).catch(err => {
+                            throw faile(err) || err;
+                        })
+                    }
+                 }, err => this.$log.debug(err))
+             }
+
+        }
+
+        getLocalStorageKey(args) {
+            let localStorageKey = ((this.cacheKey + '_' + this.$injector.get('AuthService').getIdentity().userName + '_' + this.apiPath + '_') + (args ? angular.toJson(args[0]) : ''));
+            this.$log.debug(localStorageKey);
+            return localStorageKey;
         }
     }
 
