@@ -9,10 +9,11 @@ class Api extends ApiService{}
 
 var app = angular.module('app', [apiModule]);
 
-app.config(['localCacheServiceProvider', function(localCacheServiceProvider){
+app.config(['localCacheServiceProvider', '$logProvider', function(localCacheServiceProvider, $logProvider){
     localCacheServiceProvider.setConfig({
         API_SERVER: 'http://localhost:8888'
     });
+    $logProvider.debugEnabled(true);
 }]);
 
 app.controller('myCtrl', ['$scope','Api','$resource', function($scope, Api,$resource) {
