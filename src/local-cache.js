@@ -6,7 +6,7 @@ export class localCache {
     DB_VERSION = 1;
     DB_STORE_NAME = ['HTTP_REQUEST_CACHE'];
     DB_TYPE = 'localStorage';
-
+    
     constructor() {
     }
 

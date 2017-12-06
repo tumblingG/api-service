@@ -1,5 +1,4 @@
 (function(window, angular) {'use strict';
-    const API_SERVER = 'http://localhost:8080';
     /**
      * @decorator
      * @param configs
@@ -49,18 +48,16 @@
     };
 
     class ApiService {
-        constructor($injector, $cacheFactory, $resource, $log, $window, localCache) {
-            this.$injector = $injector;
+        constructor($cacheFactory, $resource, $log, $q, localCacheService) {
             this.$cacheFactory = $cacheFactory;
             this.$resource = $resource;
             this.$log = $log;
-            this.$window = $window;
-            this.localCache = localCache;
-
-            return factory();
+            this.$q = $q;
+            this.localCacheService = localCacheService;
+            return this.apiFactory();
         }
 
-        factory() {
+        apiFactory() {
             if (angular.isUndefined(this.apiPath)) {
                 throw 'must provide a api path to create a client request';
             }
@@ -78,15 +75,14 @@
                 actions = {},
                 actionsToCache,
                 cacheKey,
-                cacheCapacity = 20
+                cacheCapacity = 20,
+                identity
             } = this;
 
             if (!cacheKey) {
-                throw 'need a cacheKey for $cacheFactory';
-            }else {
-                this.cacheKey = cacheKey;
-                this.$log.debug(`resource cache key "${cacheKey}": for ${this.apiPath}`);
+                this.cacheKey = this.apiPath;
             }
+            this.$log.debug(`resource cache key "${cacheKey}": for ${this.apiPath}`);
 
             this._cache = this.$cacheFactory.get(this.cacheKey) || this.$cacheFactory(this.cacheKey, {capacity: cacheCapacity});
 
@@ -95,7 +91,7 @@
 
             this._params = this.getParams() || angular.merge({}, baseParams, params);
 
-            this._resource = this.resource(API_SERVER, this.apiPath, this._params, this._actions);
+            this._resource = this.resource(this.localCacheService.getApi(), this.apiPath, this._params, this._actions);
 
             if (angular.isArray(actionsToCache)) {
                 let handler = {
@@ -115,7 +111,7 @@
                                 return (...args) => {
                                     return {
                                         $promise: this._resource[prop].apply(null, args).$promise.then(res => {
-                                            this.localCache.clearFuzzyMatch(this.cacheKey);
+                                            this.localCacheService.clearFuzzyMatch(this.cacheKey);
                                             return res;
                                         }).catch(err => {throw err;})
                                     };
@@ -224,7 +220,7 @@
          */
         _findAction(name) {
             for (let _a in this._actions) {
-                if (this._actions.hasOwnPropery(_a)) {
+                if (this._actions.hasOwnProperty(_a)) {
                     if (_a === name) {
                         return this._actions[_a];
                     }
@@ -236,23 +232,25 @@
             let localKey, params, success, fail;
             if (angular.isObject(args[0])) {
                 params = args[0];
-                success = args[i] || angular.noop;
+                success = args[1] || angular.noop;
                 fail = args[2] || angular.noop;
-                localKey = this.getLocalStorageKey(args);
+                localKey = this._getLocalStorageKey(args);
             }else if (angular.isFunction(args[0])) {
                 params = {};
                 success = args[0];
-                fail = args[1];
-                localKey = this.getLocalStorageKey();
+                fail = args[1] || angular.noop;
+                localKey = this._getLocalStorageKey();
             }else {
-                //call orgin function
-                return originFn.apply(null, args);
+                params = {};
+                success = angular.noop;
+                fail = angular.noop;
+                localKey = this._getLocalStorageKey();
             }
 
              return {
-                 $promise: this.localCache.getItem(localkey).then(res => {
+                 $promise: this.localCacheService.getItem(localKey).then(res => {
                     if (res) {
-                        this.$log.debug(`${this.getLocalStorageKey()}: load from local`);
+                        this.$log.debug(`${this._getLocalStorageKey()}: load from local`);
                         return this.$q.resolve(res).then(res => {
                             return success(res) || res;
                         }).catch(err => {
@@ -260,32 +258,32 @@
                         });
                     }else {
                         return originFn.apply(null, [params]).$promise.then(res => {
-                            this.localCache.setItem(localKey, res);
+                            this.localCacheService.setItem(localKey, res);
                             return success(res) || res;
                         }).catch(err => {
-                            throw faile(err) || err;
+                            throw fail(err) || err;
                         })
                     }
                  }, err => this.$log.debug(err))
              }
-
         }
 
-        getLocalStorageKey(args) {
-            let localStorageKey = ((this.cacheKey + '_' + this.$injector.get('AuthService').getIdentity().userName + '_' + this.apiPath + '_') + (args ? angular.toJson(args[0]) : ''));
+        _getLocalStorageKey(args) {
+            let localStorageKey = ((this.cacheKey + '_' + this.apiPath + '_') + (this.identity ? identity + '_' : '') + (args ? angular.toJson(args[0]) : ''));
             this.$log.debug(localStorageKey);
             return localStorageKey;
         }
     }
 
     ApiService.$inject = [
-        '$injector',
         '$cacheFactory',
         '$resource',
         '$log',
-        '$window',
         '$q',
-        'localCache'
+        'localCacheService'
     ];
 
-})(window, window.angular);
+    exports.ResourceParams = ResourceParams;
+    exports.ApiService = ApiService;
+
+})(window, window.angular || require('angular'));
