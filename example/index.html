@@ -3,9 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+        pre {
+            font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+            display: block;
+            margin: 0 0 10px;
+            font-size: 13px;
+            line-height: 1.42857143;
+            color: #333;
+            word-break: break-all;
+            word-wrap: break-word;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #eee;
+            border: 1px solid #ddd;
+            padding: 15px;
+        }
+        .response {
+            padding: 10px;
+        }
+    </style>
 </head>
 <body ng-controller="myCtrl">
-<button type="button" ng-click="save()">保存</button>
-<button type="button" ng-click="get()">保存2</button>
+<button type="button" ng-click="create()">create</button>
+<button type="button" ng-click="get()">get</button>
+<button type="button" ng-click="list()">list</button>
+<button type="button" ng-click="getAll()">getAll</button>
+<button type="button" ng-click="update()">update</button>
+<button type="button" ng-click="delete()">delete</button>
+<div class="response">response：</div>
+<pre >{{code}}</pre>
+
 </body>
 </html>

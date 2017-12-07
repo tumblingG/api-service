@@ -73,7 +73,7 @@
             let {
                 params = {},
                 actions = {},
-                actionsToCache,
+                actionsToLocalCache,
                 cacheKey,
                 cacheCapacity = 20,
                 identity
@@ -93,7 +93,7 @@
 
             this._resource = this.resource(this.localCacheService.getApi(), this.apiPath, this._params, this._actions);
 
-            if (angular.isArray(actionsToCache)) {
+            if (angular.isArray(actionsToLocalCache)) {
                 let handler = {
                     get: (target, prop, receiver) => {
                         if (prop === 'cacheKey') {
@@ -102,7 +102,7 @@
                         let action;
                         if (action = this._findAction(prop)) {
                             if (Object.is(action.method, 'GET')) {
-                                if (actionsToCache.includes(prop)) {
+                                if (actionsToLocalCache.includes(prop)) {
                                     return  this._cachedFn.bind(this, this._resource[prop])
                                 }else {
                                     return this._resource[prop];
@@ -111,14 +111,14 @@
                                 return (...args) => {
                                     return {
                                         $promise: this._resource[prop].apply(null, args).$promise.then(res => {
-                                            this.localCacheService.clearFuzzyMatch(this.cacheKey);
+                                            this.localCacheService.clearFuzzyMatch(this._prefixLocalStorageKey());
                                             return res;
                                         }).catch(err => {throw err;})
                                     };
                                 }
                             }
                         }else {
-                            throw 'do not has this method';
+                            throw `do not has ${action.method} method`;
                         }
                     }
                 };
@@ -174,14 +174,23 @@
             let cache = this._cache;
             if (this.disableCache || !cache) {
                 //do nothing
-            }else if (this.disableCacheArr) {
+            }else if (this.actionsToCache) {
+                if (!Array.isArray(this.actionsToCache)) {
+                    throw 'actionsToCache must be an array.'
+                }
                 Object.keys(actions).forEach(_k => {
-                    if (this.disableCacheArray.indexOf(_k) === -1) {
-                        actions[_k].cache = cache;
+                    if (this.actionsToCache.indexOf(_k) !== -1) {
+                        if (actions[_k].method === 'GET') {
+                            actions[_k].cache = cache;
+                        }
                     }
                 });
             }else {
-                Object.keys(actions).forEach(_k => actions[_k].cache = cache);
+                Object.keys(actions).forEach(_k => {
+                    if (actions[_k].method === 'GET') {
+                        actions[_k].cache = cache;
+                    }
+                });
             }
             return actions;
         }
@@ -249,6 +258,7 @@
 
              return {
                  $promise: this.localCacheService.getItem(localKey).then(res => {
+                     debugger;
                     if (res) {
                         this.$log.debug(`${this._getLocalStorageKey()}: load from local`);
                         return this.$q.resolve(res).then(res => {
@@ -268,10 +278,15 @@
              }
         }
 
-        _getLocalStorageKey(args) {
-            let localStorageKey = ((this.cacheKey + '_' + this.apiPath + '_') + (this.identity ? identity + '_' : '') + (args ? angular.toJson(args[0]) : ''));
+        _getLocalStorageKey(args) {             
+            let localStorageKey = ((this.cacheKey + '_' + this.apiPath + '_') + (this.identity ? this.identity + '_' : '') + (args ? angular.toJson(args[0]) : ''));
             this.$log.debug(localStorageKey);
             return localStorageKey;
+        }
+
+        _prefixLocalStorageKey () {
+            let prefixlocalStorageKey = ((this.cacheKey + '_' + this.apiPath + '_') + (this.identity ? this.identity: '') );
+            return prefixlocalStorageKey;
         }
     }
 

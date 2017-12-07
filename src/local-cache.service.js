@@ -25,6 +25,7 @@ class localCacheService {
                 return API_SERVER;
             },
             setItem: function(key, data) {
+                debugger;
                 switch (DB_TYPE) {
                     case 'localStorage':
                         return $q.resolve(client.setItem(key, data));
@@ -282,6 +283,7 @@ class IndexedDBClient {
     }
 
     removeItem(key, success, fail) {
+        debugger;
         let transaction = this.db.transaction(this.DB_STORE_NAME, 'readwrite');
         let objectStore = transaction.objectStore(this.SN);
         let request = objectStore.delete(key);
@@ -290,6 +292,7 @@ class IndexedDBClient {
     }
 
     removeFuzzyMatch(key, success, fail) {
+        debugger;
         let transaction = this.db.transaction(this.DB_STORE_NAME, 'readwrite');
         let objectStore = transaction.objectStore(this.SN);
         let request = objectStore.getAllKeys();
