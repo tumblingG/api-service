@@ -1,5 +1,5 @@
 # api-service
-一个封装了AngularJS ngResource服务模块的库,用于快速构建可设置本地缓存的reset风格的API服务。
+一个封装了`ngResource`服务模块的库,用于快速构建`可设置本地缓存的`、`reset风格的`API服务。
 
 ### 基本使用教程
 #### 1、构建一个请求服务
