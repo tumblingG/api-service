@@ -18,7 +18,7 @@ var app = angular.module('app', [apiModule]).service('Api', Api);
 你可以多次新建类继承`ApiService`,并使用`@ResourceParams`装饰器装饰该类来创建不同的请求API。这在一个大型的，需要发送多次请求的系统的会变得尤其高效，然而这个库的功能当然不可能只有这些，更详细的信息请查看高级使用教程。
 
 #### 2、设置请求服务器地址
-`apiModule`模块提供了了一个名为`localCacheServiceProvider`的提供者，我们可以在config中设置服务器的地址，服务器地址只需要设置一次，那么每次的请求都会转发到该地址上。
+`apiModule`模块提供了了一个名为`localCacheServiceProvider`的提供者，通过它可以在config中设置服务器的地址，服务器地址只需要设置一次，那么每次的请求都会转发到该地址上。
 ```
 app.config(['localCacheServiceProvider', function(localCacheServiceProvider){
     localCacheServiceProvider.setConfig({
@@ -53,9 +53,9 @@ app.controller('myCtrl', ['$scope', 'Api', ($scope, Api) => {
 
 该库设置的缓存分为两种，一是设置持久性的本地缓存，使用`localStorage`或者`indexedDB`缓存策略，二是设置angular自带的cache缓存，这种缓存在应用生命周期内有效，关闭应用会自动清除。
 
-关于如何设置缓存，只需要在装饰器中设置相应的元数据即可。
+设置缓存只需要在装饰器中提供相应的元数据即可，例如：
 
-设置持久性本地缓存:
+设置持久性本地缓存，名为‘list’的actions请求的数据将会被保存在本地。
 ```
 @ResourceParams({
     apiPath: '/app/:id',
@@ -65,7 +65,7 @@ class Api extends ApiService{}
 ```
 设置angular cache缓存：
 
-默认的所有的`GET`请求都被设置为angular cache缓存的，你可以指定`disableCache`为`true`来禁止缓存请求，或者指定`actionsToCache`来设置只有指定的请求能够缓存，`disableCache`拥有较高的优先级。
+默认的所有的`GET`请求都被设置为angular cache缓存的，你可以指定`disableCache`为`true`来禁止缓存所有actions请求，或者指定`actionsToCache`来设置只有指定的actions请求能够被缓存，`disableCache`拥有较高的优先级。
 ```
 @ResourceParams({
     apiPath: '/app/:id',
@@ -75,12 +75,34 @@ class Api extends ApiService{}
 ```
 更多功能及详细信息请参考高级使用教程。
 
+## 编译
+该库使用了ES6的代理以及ES7的装饰器新特性，所以需要babel来进行编译，下面是一个.babelrc文件的配置,具体的可以参考源文件中`example`的配置。
+```
+{
+  "presets": [
+    "es2015",
+    "stage-0"
+  ],
+  "plugins": [
+    "transform-decorators-legacy"
+  ],
+  "env": {
+    "test": {
+      "plugins": [
+        "istanbul"
+      ]
+    }
+  }
+}
+
+```
+
 ## 高级使用教程
 `api-service`包主要由三部分构成：
 - `apiModule`模块，包含了一个名为`localCacheServiceProvider`的提供者，该提供者封装了操作本地缓存的统一API。
 - `ResourceParams`装饰器，用于在运行时将元数据加入类中。
 - `ApiService`基类，封装了$resource服务。
-#### 1、localCacheServiceProvider
+#### 1、localCacheServiceProvider提供者
 该服务封装了本地缓存的统一API，`api-service`包提供了两种本地持久性缓存策略：`localStorage`和`indexedDB`，默认使用`localStorage`，关于`indexedDB`的使用请查看[IndexedDB](https://developer.mozilla.org/zh-CN/docs/Web/API/IndexedDB_API)，`indexedDB`的使用是非常复杂的，但是在这里你不需要了解这些，因为它被封装为和`localStorage`一样的API。在存储大数据的时候推荐使用`indexedDB`。
 ```
 var app = angular.module('app', [apiModule])
@@ -94,23 +116,25 @@ var app = angular.module('app', [apiModule])
 ```
 localCacheServiceProvider.setConfig({
         API_SERVER: 'http://localhost:8888',
-        DB_TYPE: 'indexedDB', //选择indexedDB缓存策略，或localStorage
+        DB_TYPE: 'indexedDB', //选择indexedDB缓存策略，默认为'localStorage'
         DB_NAME: 'xxx', //数据库名称(可选，默认‘MY_CLIENT_DB’)
         DB_VERSION: 1, //数据库版本号（可选，默认1）
         DB_STORE_NAME: 'yyy'  //存储对象名称（可选，默认‘HTTP_REQUEST_CACHE’）
     });
 ```
-> `localCacheService`服务暴露的API
-- getApi: function()，返回设置的API_SERVER。
-- getIdentity: function()，获取用户标识。
-- setIdentity: function(identity)，设置用户标识。
-- setItem: function(key, data)，保存数据。
-- getItem: function(key)，获取数据。
-- removeItem: function(key)，删除一条数据。
-- clear()，清空全部缓存。
-- clearFuzzyMatch: function(key),模糊匹配删除，会删除以key开头的键的数据。
-- deleteDB: function()，删除数据库(indexedDB模式专有)。
-- closeDB: function()，关闭数据库(indexedDB模式专有)。
+除开`API_SERVER`和`DB_TYPE`是必须指定的外，其它的都提供了默认值，是可选的。
+
+####  2、`localCacheService`服务暴露的API
+- `getApi: function()`，返回设置的API_SERVER。
+- `getIdentity: function()`，获取用户标识。
+- `setIdentity: function(identity)`，设置用户标识。
+- `setItem: function(key, data)`，保存数据。
+- `getItem: function(key)`，获取数据。
+- `removeItem: function(key)`，删除一条数据。
+- `clear()`，清空全部缓存。
+- `clearFuzzyMatch: function(key)`,模糊匹配删除，会删除以key开头的键的数据。
+- `deleteDB: function()`，删除数据库(indexedDB模式专有)。
+- `closeDB: function()`，关闭数据库(indexedDB模式专有)。
 
 这些API你可能都不需要使用到，因为它们主要用于为`ApiService`基类提供服务。当然你可能在系统中做一个清除缓存的按钮，例如：
 ```
@@ -120,7 +144,7 @@ app.controller('myCtrl', ['$scope', 'localCacheService', ($scope, localCacheServ
     };
 }]);
 ```
-#### 2、默认params和actions
+#### 3、默认params和actions
 默认的提供了以下的`params`和`actions`。
 ```
 const baseParams = {
@@ -152,7 +176,7 @@ const baseActions = {
 ```
 但是可以通过元数据替换或者修改默认的`params`或者`actions`，详情请查看下面的装饰器元数据。
 
-#### 3、`@ResourceParams`装饰器元数据
+#### 4、`@ResourceParams`装饰器元数据
 下面列出了`@ResourceParams`装饰器可用的全部元数据，但是你可能一次只会用到其中的一种或几种。
 ```
 @ResourceParams({
@@ -198,7 +222,7 @@ class Api extends ApiService{}
 })
 class Api extends ApiService{}
 ```
-> getParams：该字段应是一个函数，它的返回值将完全取代`baseParams`，例如我们设置了以下信息后，我们只能拥有`template_id`一个默认参数。
+> getParams：该字段应是一个函数，它的返回值将完全取代`baseParams`，例如我们设置了以下信息后，我们只能拥有`template_id`一个默认参数。需要注意的是，一旦设置了`getParams`你不应该再设置`params`元数据，因为此时api将忽略`params`的值，对于`getActions`也是一样的。
 ```
 @ResourceParams({
     apiPath: '/app/:template_id'
@@ -270,10 +294,10 @@ class Api extends ApiService{}
 })
 class Api extends ApiService{}
 ```
-#### 4、设置用户标识
+#### 5、设置用户标识
 对于同一个应用的的同一个请求，你也许希望针对不同的用户保存相应的内容。而删除的时候也只是删除相应用户的数据。这时你可以调用`localCacheService`的`setIdentity(identity)`方法。
 
-例如以下用例，在用户登录完成后从后台获取到用户的唯一标识`identity`，那么每个不同的用户就会保存不同的用户数据副本。
+例如以下用例，在用户登录完成后从后台获取到用户的唯一标识`identity`，然后调用`localCacheService.setIdentity(identity)`，那么每个不同的用户就会保存不同的用户数据副本。
 ```
 app.controller('myCtrl', ['LoginService,'localCacheService', (localCacheService) => {
     localCacheService.setIdentity(LoginService.getIdentity());
