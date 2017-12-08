@@ -17,12 +17,19 @@ class localCacheService {
 
     $get = ['$q', $q => {
         let DB_TYPE = this.DB_TYPE;
-        let API_SERVER = this.API_SERVER
+        let API_SERVER = this.API_SERVER;
+        let IDENTITY = '';
         let client = DB_TYPE === 'localStorage' ? new LocalStorageClient() :
             new IndexedDBClient(this.DB_NAME, this.DB_VERSION, this.DB_STORE_NAME).initDB();
         return {
             getApi: function() {
                 return API_SERVER;
+            },
+            getIdentity: function() {
+                return IDENTITY;
+            },
+            setIdentity: function(identity) {
+                IDENTITY = identity;
             },
             setItem: function(key, data) {
                 debugger;

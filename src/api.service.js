@@ -278,14 +278,16 @@
              }
         }
 
-        _getLocalStorageKey(args) {             
-            let localStorageKey = ((this.cacheKey + '_' + this.apiPath + '_') + (this.identity ? this.identity + '_' : '') + (args ? angular.toJson(args[0]) : ''));
+        _getLocalStorageKey(args) {
+            let identity = this.localCacheService.getIdentity();
+            let localStorageKey = ((this.cacheKey + '_' + this.apiPath + '_') + (identity ? identity + '_' : '') + (args ? angular.toJson(args[0]) : ''));
             this.$log.debug(localStorageKey);
             return localStorageKey;
         }
 
         _prefixLocalStorageKey () {
-            let prefixlocalStorageKey = ((this.cacheKey + '_' + this.apiPath + '_') + (this.identity ? this.identity: '') );
+            let identity = this.localCacheService.getIdentity();
+            let prefixlocalStorageKey = ((this.cacheKey + '_' + this.apiPath + '_') + (identity ? identity: '') );
             return prefixlocalStorageKey;
         }
     }

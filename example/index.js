@@ -21,7 +21,8 @@ var app = angular.module('app', [apiModule])
 
 app.service('Api', Api);
 
-app.controller('myCtrl', ['$scope','Api', function($scope, Api) {
+app.controller('myCtrl', ['$scope','Api', 'localCacheService', function($scope, Api, localCacheService) {
+    localCacheService.setIdentity("AAAAA");
     console.log(Api.cacheKey);
     $scope.create = function() {
         Api.create({id:123 , actions: 'create'}, (res) => {

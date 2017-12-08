@@ -63,9 +63,9 @@ module.exports = {
         ]
     },
     plugins: [
-        new CleanWebpackPlugin('./build', {
-            verbose: true
-        }),
+        // new CleanWebpackPlugin('./build', {
+        //     verbose: true
+        // }),
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery",
