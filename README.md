@@ -49,7 +49,9 @@ app.controller('myCtrl', ['$scope', 'Api', ($scope, Api) => {
 }])
 ```
 #### 4、设置缓存服务
-该库设置的缓存分为两种，一是设置持久性的本地缓存，使用`localStorage`或者`indexedDB`缓存策略，二是设置angular自带的cache缓存，这种缓存在应用生命周期内有效，关闭应用会自动清除。(注：根据http规范，缓存只是在`GET`请求中有效)。
+> 注：根据http规范，缓存只是在`GET`请求中有效，本篇所指的缓存也都是指`GET`请求，你不应该对一个除`GET`以外的请求设置缓存。
+
+该库设置的缓存分为两种，一是设置持久性的本地缓存，使用`localStorage`或者`indexedDB`缓存策略，二是设置angular自带的cache缓存，这种缓存在应用生命周期内有效，关闭应用会自动清除。
 
 关于如何设置缓存，只需要在装饰器中设置相应的元数据即可。
 
@@ -148,7 +150,7 @@ const baseActions = {
         }
     };
 ```
-但是我们提供了可以通过元数据替换或者修改这些`params`或者`actions`的方法，详情请查看下面的装饰器元数据。
+但是可以通过元数据替换或者修改默认的`params`或者`actions`，详情请查看下面的装饰器元数据。
 
 #### 3、`@ResourceParams`装饰器元数据
 下面列出了`@ResourceParams`装饰器可用的全部元数据，但是你可能一次只会用到其中的一种或几种。
@@ -196,11 +198,11 @@ class Api extends ApiService{}
 })
 class Api extends ApiService{}
 ```
-> getParams：该字段应是一个函数，它的返回值将完全取代`baseParams`，例如我们设置了以下信息后，我们只能有`template_id`一个默认参数。
+> getParams：该字段应是一个函数，它的返回值将完全取代`baseParams`，例如我们设置了以下信息后，我们只能拥有`template_id`一个默认参数。
 ```
 @ResourceParams({
     apiPath: '/app/:template_id'
-    actions: () => {
+    getParams: () => {
         return {
             template_id: '@template_id'
         };
@@ -214,7 +216,7 @@ class Api extends ApiService{}
 ```
 @ResourceParams({
     apiPath: '/app/:id'
-    actions: () => {
+    getActions: () => {
         return {
             view: {
                 method: 'GET'
@@ -225,7 +227,7 @@ class Api extends ApiService{}
 })
 class Api extends ApiService{}
 ```
-> `actionsToLocalCache`：指定哪些`GET`方法要持久性的缓存到本地。例如以下我们设置了`get`和`getAll`，这个两个方法请求的数据将会持久性的保存在本地，下次打开浏览器请求的时候会直接从本地读取数据，而不再去请求服务器。
+> `actionsToLocalCache`：指定哪些actions方法要持久性的缓存到本地。例如以下我们设置了`get`和`getAll`，这个两个方法请求的数据将会持久性的保存在本地，下次打开浏览器请求的时候会直接从本地读取数据，而不再去请求服务器。
 ```
 @ResourceParams({
     apiPath: '/app/:id'
@@ -233,7 +235,7 @@ class Api extends ApiService{}
 })
 class Api extends ApiService{}
 ```
-> `disableCache`：一个`boolean`值，默认为`false`，会将所有`GET`请求都缓存到angular的cache里，下次请求的时候直接从cache拿而不会去请求服务器。如果设为true，则会禁止angular缓存所有`GET`请求。
+> `disableCache`：一个`boolean`值，默认为`false`，会将所有actions请求都缓存到angular的cache里，下次请求的时候直接从cache拿而不会去请求服务器。如果设为true，则会禁止angular缓存所有actions请求。
 ```
 @ResourceParams({
     apiPath: '/app/:id'
@@ -241,7 +243,7 @@ class Api extends ApiService{}
 })
 class Api extends ApiService{}
 ```
-> `actionsToCache`：一个数组，用于指定哪些`GET`请求需要被缓存，一旦设置该数组，则会覆盖默认配置，只有该数组里的方法会被缓存，而其他的则被忽略。需要注意的是，`disableCache`拥有较高的优先级，`disableCache`为`true`的时候不应该再设置该字段，因为此时所有`GET`请求都被禁止缓存。
+> `actionsToCache`：一个数组，用于指定哪些actions请求需要被缓存，一旦设置该数组，则会覆盖默认配置，只有该数组里的方法会被缓存，而其他的则被忽略。需要注意的是，`disableCache`拥有较高的优先级，`disableCache`为`true`的时候不应该再设置该字段，因为此时所有actions请求都被禁止缓存。
 ```
 @ResourceParams({
     apiPath: '/app/:id'
