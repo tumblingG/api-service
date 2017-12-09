@@ -3,6 +3,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const path = require('path');
 
 //js注入html排序
 const chunks = [ 'app', /*'vendors',*/'common'];
@@ -32,7 +33,11 @@ module.exports = {
                 use: {
                     loader: "babel-loader"
                 },
-                exclude: /node_modules/
+                include: [
+                    path.resolve(__dirname, 'example'),
+                    path.resolve(__dirname, 'src'),
+                    /node_modules(?!\/ng1-api-service)/
+                ]
             },
             {
                 test: /\.css$/,
