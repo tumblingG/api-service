@@ -2,7 +2,7 @@
 一个封装了`ngResource`服务模块的库,用于快速构建`可设置本地缓存的`、`reset风格的`API服务。
 
 下载：
-`npm install --save @promise/api-service`
+`npm install --save ng1-api-service`
 
 依赖：
 - angular
@@ -11,7 +11,7 @@
 ### 基本使用教程
 #### 1、构建一个请求服务
 ```
-let  { apiModule, ResourceParams, ApiService } = require('@promise/api-service');
+let  { apiModule, ResourceParams, ApiService } = require('ng1-api-service');
 
 @ResourceParams({
     apiPath: '/app/:id',

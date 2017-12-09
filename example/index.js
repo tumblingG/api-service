@@ -1,5 +1,5 @@
 let  { apiModule, ResourceParams, ApiService} = require('../index');
-//实际项目中你应该使用 let  { apiModule, ResourceParams, ApiService} = require('@promise/api-service');
+//实际项目中你应该使用 let  { apiModule, ResourceParams, ApiService} = require('ng1-api-service');
 
 //创建服务类
 @ResourceParams({
