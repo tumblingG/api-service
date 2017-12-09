@@ -11,7 +11,7 @@
 ### 基本使用教程
 #### 1、构建一个请求服务
 ```
-let  { apiModule, ResourceParams, ApiService } = require('api-service');
+let  { apiModule, ResourceParams, ApiService } = require('@promise/api-service');
 
 @ResourceParams({
     apiPath: '/app/:id',
