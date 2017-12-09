@@ -4,11 +4,14 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
+//js注入html排序
+const chunks = [ 'app', /*'vendors',*/'common'];
+
 module.exports = {
     //入口文件
     entry: {
-        vendors: ['jquery','angular', 'angular-resource'],
-        app: __dirname + "/example/index.js"
+        app: __dirname + "/example/index.js",
+        //vendors: ['jquery','/angular', 'angular-resource']
     },
     output: {
         path: __dirname + "/build", //打包后文件存放的地方
@@ -73,7 +76,12 @@ module.exports = {
         }),
         new HtmlWebpackPlugin({
             template: __dirname + "/example/index.html",
-            inject: "body"
+            inject: "body",
+            chunksSortMode: function(a,b) {
+                const aIdex = chunks.indexOf(a.names[0]);
+                const bIdex = chunks.indexOf(b.names[0]);
+                return bIdex - aIdex;
+            }
         }),
         new webpack.optimize.CommonsChunkPlugin({
             name: "common" // 指定公共 bundle 的名字。

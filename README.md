@@ -1,6 +1,13 @@
 # api-service
 一个封装了`ngResource`服务模块的库,用于快速构建`可设置本地缓存的`、`reset风格的`API服务。
 
+下载：
+`npm install --save api-service`
+
+依赖：
+- angular
+- angular-resource
+
 ### 基本使用教程
 #### 1、构建一个请求服务
 ```
@@ -189,7 +196,8 @@ const baseActions = {
     disableCache: boolean,
     actionsToCache: [],
     cacheKey: string,
-    cacheCapacity: number
+    cacheCapacity: number,
+    identity: string
 })
 ```
 > apiPath：设置请求的路径，必须指定，如果省略将抛出一个错误。
@@ -258,7 +266,7 @@ class Api extends ApiService{}
 })
 class Api extends ApiService{}
 ```
-> `disableCache`：一个`boolean`值，默认为`false`，会将所有`GET`的actions请求都缓存到angular的cache里，下次请求的时候直接从cache拿而不会去请求服务器。如果设为true，则会禁止angular缓存所有actions请求。
+> `disableCache`：一个`boolean`值，默认为`false`，会将所有actions请求都缓存到angular的cache里，下次请求的时候直接从cache拿而不会去请求服务器。如果设为true，则会禁止angular缓存所有actions请求。
 ```
 @ResourceParams({
     apiPath: '/app/:id'
@@ -298,7 +306,17 @@ class Api extends ApiService{}
 
 例如以下用例，在用户登录完成后从后台获取到用户的唯一标识`identity`，然后调用`localCacheService.setIdentity(identity)`，那么每个不同的用户就会保存不同的用户数据副本。
 ```
-app.controller('myCtrl', ['LoginService,'localCacheService', (LoginService, localCacheService) => {
+app.controller('myCtrl', ['LoginService,'localCacheService', (localCacheService) => {
     localCacheService.setIdentity(LoginService.getIdentity());
 }]);
+```
+## demo
+下面的命令会运行一个本地node服务器，并且打包应用程序。
+```
+cd api-service
+npm install
+//启动test服务器
+node server.js
+//webpack打包应用
+npm run server
 ```

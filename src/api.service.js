@@ -258,7 +258,6 @@
 
              return {
                  $promise: this.localCacheService.getItem(localKey).then(res => {
-                     debugger;
                     if (res) {
                         this.$log.debug(`${this._getLocalStorageKey()}: load from local`);
                         return this.$q.resolve(res).then(res => {
@@ -303,4 +302,4 @@
     exports.ResourceParams = ResourceParams;
     exports.ApiService = ApiService;
 
-})(window, window.angular || require('angular'));
+})(window, window.angular);
