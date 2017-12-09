@@ -103,6 +103,19 @@ class Api extends ApiService{}
 }
 
 ```
+在webpack.config.js文件中,还要把node_modules/ng1-api-service加入编译列表中。
+```
+{
+    test: /\.js$/,
+    use: {
+        loader: "babel-loader"
+    },
+    include: [
+        path.resolve(__dirname, 'example'),
+        /node_modules(?!\/ng1-api-service)/
+    ]
+}
+```
 
 ## 高级使用教程
 `api-service`包主要由三部分构成：
