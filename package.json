@@ -1,6 +1,6 @@
 {
   "name": "ng1-api-service",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "一个封装了ngResource服务模块的库,用于快速构建可设置本地缓存的、reset风格的API服务",
   "keyword": [
     "angular",
