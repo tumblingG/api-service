@@ -2,7 +2,7 @@
 一个封装了`ngResource`服务模块的库,用于快速构建`可设置本地缓存的`、`reset风格的`API服务。
 
 下载：
-`npm install --save api-service`
+`npm install --save @promise/api-service`
 
 依赖：
 - angular
